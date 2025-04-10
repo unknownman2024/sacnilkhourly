@@ -77,7 +77,7 @@ function cleanMovieTitle($title) {
     return preg_replace('/\s+Box Office.*$/i', '', $title);
 }
 
-$jsonUrl = 'https://bo24.rf.gd/S/json.php';
+$jsonUrl = 'https://hourlysac.onrender.com/json.php';
 $movieLinks = fetchJsonFromUrl($jsonUrl);
 
 $outputFile = 'data.json';
