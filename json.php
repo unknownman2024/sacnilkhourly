@@ -6,20 +6,20 @@ error_reporting(E_ALL);
 header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json");
 
-$url = "https://www.sacnilk.com/snpage";
+$url = "https://www.sacnilk.com/metasection/box_office";
+
 $ch = curl_init($url);
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_ENCODING, '');
 curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // 🛠 disable SSL verification for testing
-
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
 $html = curl_exec($ch);
 
 if (curl_errno($ch)) {
-    echo "cURL Error: " . curl_error($ch);
+    echo json_encode(["error" => curl_error($ch)]);
     exit;
 }
-
 curl_close($ch);
 
 $dom = new DOMDocument();
@@ -28,16 +28,18 @@ $dom->loadHTML($html);
 libxml_clear_errors();
 
 $xpath = new DOMXPath($dom);
-$items = $xpath->query('//div[@id="recentquicknews"]/a');
+
+// Updated selector to match the new layout
+$newsDivs = $xpath->query('//div[contains(@class, "relatednewssidemainshort")]/a');
 
 $data = [];
 
-foreach ($items as $aTag) {
-    $href = $aTag->getAttribute('href');
-    $bTag = $aTag->getElementsByTagName('b')->item(0);
-    $name = $bTag ? trim($bTag->nodeValue) : '';
+foreach ($newsDivs as $linkNode) {
+    $href = $linkNode->getAttribute('href');
+    $titleNode = $xpath->query('.//b', $linkNode)->item(0);
+    $name = $titleNode ? trim($titleNode->textContent) : '';
 
-    if ($href && $name && stripos($name, "Box Office") !== false) {
+    if ($href && $name && stripos($name, 'Box Office') !== false) {
         $data[] = [
             'name' => $name,
             'link' => 'https://www.sacnilk.com' . $href
