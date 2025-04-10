@@ -1,4 +1,4 @@
-# Use the official PHP 8.2 image with Apache
+# Use official PHP Apache image
 FROM php:8.2-apache
 
 # Enable Apache mod_rewrite
@@ -7,11 +7,11 @@ RUN a2enmod rewrite
 # Set working directory inside the container
 WORKDIR /var/www/html
 
-# Copy all project files to container
+# Copy project files into the container
 COPY . .
 
-# Install required PHP extensions (e.g., DOM and cURL)
-RUN docker-php-ext-install dom curl
+# Just confirm necessary extensions are enabled
+RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
 
-# Optional: expose port 80
+# Open port 80 for HTTP traffic
 EXPOSE 80
