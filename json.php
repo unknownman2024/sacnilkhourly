@@ -28,23 +28,55 @@ $dom->loadHTML($html);
 libxml_clear_errors();
 
 $xpath = new DOMXPath($dom);
-
-// Updated selector to match the new layout
 $newsDivs = $xpath->query('//div[contains(@class, "relatednewssidemainshort")]/a');
 
-$data = [];
+$allMovies = [];
 
 foreach ($newsDivs as $linkNode) {
     $href = $linkNode->getAttribute('href');
     $titleNode = $xpath->query('.//b', $linkNode)->item(0);
-    $name = $titleNode ? trim($titleNode->textContent) : '';
+    $fullTitle = $titleNode ? trim($titleNode->textContent) : '';
 
-    if ($href && $name && stripos($name, 'Box Office') !== false) {
-        $data[] = [
-            'name' => $name,
-            'link' => 'https://www.sacnilk.com' . $href
+    if ($href && $fullTitle && stripos($fullTitle, 'Box Office') !== false) {
+        if (preg_match('/^(.*?) Box Office Collection Day (\d+)/i', $fullTitle, $matches)) {
+            $rawTitle = trim($matches[1]);
+            $day = (int)$matches[2];
+
+            // Normalize title
+            $normalized = preg_replace('/\b(19|20)\d{2}\b/', '', $rawTitle);
+            $normalized = strtolower(trim(preg_replace('/[^a-z0-9]+/i', ' ', $normalized)));
+
+            // Store all day entries per movie
+            if (!isset($allMovies[$normalized])) {
+                $allMovies[$normalized] = [];
+            }
+
+            $allMovies[$normalized][] = [
+                'name' => $fullTitle,
+                'link' => 'https://www.sacnilk.com' . $href,
+                'day' => $day
+            ];
+        }
+    }
+}
+
+$finalOutput = [];
+
+// Now process and pick highest-day entry per movie, if <= 10
+foreach ($allMovies as $entries) {
+    // Sort entries by day DESC
+    usort($entries, function ($a, $b) {
+        return $b['day'] - $a['day'];
+    });
+
+    $top = $entries[0]; // Highest day
+
+    if ($top['day'] <= 10) {
+        $finalOutput[] = [
+            'name' => $top['name'],
+            'link' => $top['link']
         ];
     }
 }
 
-echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+echo json_encode($finalOutput, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
