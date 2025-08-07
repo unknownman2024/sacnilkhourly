@@ -2,7 +2,7 @@ name: Saiyaara BO Tracker (merged)
 
 on:
   schedule:
-    - cron: "*/29 0-18 * * *"  # Every 29 minutes from 5:30 AM to 11:59 PM IST
+    - cron: "*/29 0-18 * * *"  # Every 29 mins from 5:30 AM to 11:59 PM IST
   workflow_dispatch:
 
 jobs:
@@ -12,8 +12,6 @@ jobs:
     steps:
       - name: 📥 Checkout Repo
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: 🛠 Setup Node.js
         uses: actions/setup-node@v3
@@ -22,11 +20,9 @@ jobs:
 
       - name: 📦 Install Dependencies
         run: npm install
-        working-directory: .  # Root of the repo
 
       - name: 🏃 Run Scraper
         run: node scrape.js
-        working-directory: .  # Root of the repo
 
       - name: 📝 Commit & Push Updates
         run: |
@@ -36,4 +32,3 @@ jobs:
           git commit -m "Auto update: $(date '+%Y-%m-%d %H:%M')" || echo "No changes to commit"
           git pull --rebase --autostash || echo "Pull failed"
           git push || echo "Nothing to push"
-        working-directory: .  # Root of the repo
