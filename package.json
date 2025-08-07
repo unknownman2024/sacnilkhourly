@@ -1,12 +1,15 @@
 {
-  "dependencies": {
-    "cheerio": "^1.1.2",
-    "node-fetch": "2.6.9"
-  },
-  "overrides": {
-"undici": "^6.6.0"
-  },
+  "name": "sacnilkhourly",
+  "version": "1.0.0",
+  "description": "Scrapes Sacnilk box office data hourly",
+  "main": "scrape.js",
   "scripts": {
     "start": "node scrape.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "undici": "^6.6.0"
   }
 }
