@@ -22,7 +22,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          npm install cheerio node-fetch@2
+          npm install cheerio
 
       - name: Run Scraper
         run: |
