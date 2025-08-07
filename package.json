@@ -4,7 +4,7 @@
     "node-fetch": "2.6.9"
   },
   "overrides": {
-    "undici": "0.0.0"
+"undici": "^6.6.0"
   },
   "scripts": {
     "start": "node scrape.js"
