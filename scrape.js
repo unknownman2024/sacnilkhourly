@@ -5,10 +5,12 @@ const path = require("path");
 
 const BASE_URL = "https://www.sacnilk.com";
 const MAIN_URL = `${BASE_URL}/metasection/box_office`;
-const OUTPUT_FILE = path.join(__dirname, "data.json");
+const OUTPUT_DIR = "data";
+const OUTPUT_FILE = path.join(OUTPUT_DIR, "data.json");
 
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+// Ensure output folder exists
+if (!fs.existsSync(OUTPUT_DIR)) {
+    fs.mkdirSync(OUTPUT_DIR);
 }
 
 function normalizeTitle(rawTitle) {
@@ -16,10 +18,23 @@ function normalizeTitle(rawTitle) {
     return cleaned.toLowerCase().replace(/[^a-z0-9]+/gi, ' ').trim();
 }
 
+function cleanMovieTitle(title) {
+    return title.replace(/\s+Box Office.*$/i, '').trim();
+}
+
+function getDayFromTitle(title) {
+    const match = title.match(/Day\s+(\d+)/i);
+    return match ? `Day ${match[1]}` : 'Unknown Day';
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function fetchHTML(url) {
     const response = await fetch(url, {
         headers: {
-            'User-Agent': 'Mozilla/5.0'
+            "User-Agent": "Mozilla/5.0"
         }
     });
     if (!response.ok) throw new Error(`Failed to fetch ${url}`);
@@ -67,8 +82,8 @@ async function extractMovieLinks() {
 async function extractAmountCr(url) {
     const html = await fetchHTML(url);
     const $ = cheerio.load(html);
-
     const hr = $("#hrstart");
+
     if (hr.length === 0) return null;
 
     let textNode = hr[0].nextSibling;
@@ -78,32 +93,23 @@ async function extractAmountCr(url) {
 
     if (textNode && textNode.data) {
         const text = textNode.data.trim();
-        const match = text.match(/around ([\d.]+) Cr/i);
+        const match = text.match(/around\s+([\d.]+)\s+Cr/i);
         if (match) return parseFloat(match[1]);
     }
 
     return null;
 }
 
-function getDayFromTitle(title) {
-    const match = title.match(/Day\s+(\d+)/i);
-    return match ? `Day ${match[1]}` : 'Unknown Day';
-}
-
-function cleanMovieTitle(title) {
-    return title.replace(/\s+Box Office.*$/i, '').trim();
-}
-
 async function main() {
-    console.log("📦 Fetching latest movie links...");
+    console.log("🔍 Scraping latest Sacnilk box office data...");
     const movies = await extractMovieLinks();
 
     let existing = [];
     if (fs.existsSync(OUTPUT_FILE)) {
         try {
             existing = JSON.parse(fs.readFileSync(OUTPUT_FILE));
-        } catch (e) {
-            console.error("⚠️ Failed to parse existing data.json");
+        } catch {
+            console.warn("⚠️ Could not parse existing data.json, starting fresh.");
         }
     }
 
@@ -139,7 +145,7 @@ async function main() {
             existingMap[movieName].push(dataPoint);
         }
 
-        await sleep(1000); // be gentle with the server
+        await sleep(1000); // rate-limiting
     }
 
     const finalOutput = Object.entries(existingMap).map(([movie, data]) => ({
@@ -148,10 +154,10 @@ async function main() {
     }));
 
     fs.writeFileSync(OUTPUT_FILE, JSON.stringify(finalOutput, null, 2));
-    console.log("📁 Saved data.json");
+    console.log(`📁 Saved ${finalOutput.length} movies to ${OUTPUT_FILE}`);
 }
 
 main().catch(err => {
-    console.error("❌ Error:", err);
+    console.error("❌ Error:", err.message);
     process.exit(1);
 });
