@@ -6,11 +6,7 @@
   "scripts": {
     "start": "node scrape.js"
   },
-  "keywords": [
-    "scraper",
-    "box-office",
-    "sacnilk"
-  ],
+  "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
