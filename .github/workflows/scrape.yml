@@ -1,8 +1,8 @@
-name: Saiyaara BO Tracker (scrape)
+name: Saiyaara BO Tracker (merged)
 
 on:
   schedule:
-    - cron: "*/29 0-18 * * *"  # Every 29 minutes from 05:30 IST to 00:29 IST
+    - cron: "*/29 0-18 * * *"
   workflow_dispatch:
 
 jobs:
@@ -10,17 +10,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
           npm install cheerio
 
