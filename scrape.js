@@ -1,6 +1,7 @@
 const cheerio = require("cheerio");
 const fs = require("fs");
 const path = require("path");
+const fetch = require("node-fetch");
 
 const BASE_URL = "https://www.sacnilk.com";
 const MAIN_URL = `${BASE_URL}/metasection/box_office`;
