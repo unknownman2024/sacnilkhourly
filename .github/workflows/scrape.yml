@@ -1,16 +1,16 @@
 name: Scrape Sacnilk
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '0 * * * *' # every hour
+    - cron: "0 * * * *"  # runs every hour
+  workflow_dispatch:     # allow manual trigger
 
 jobs:
-  run-scraper:
+  scrape:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -19,7 +19,15 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --force
 
       - name: Run scraper
-        run: npm start
+        run: node scrape.js
+
+      - name: Commit data changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/data.json
+          git commit -m "📦 Update scraped data [bot]" || echo "No changes to commit"
+          git push
