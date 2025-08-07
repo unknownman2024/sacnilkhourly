@@ -1,32 +1,39 @@
-name: Scrape Sacnilk Box Office
+name: Sacnilk BO Tracker
 
 on:
-  workflow_dispatch:
   schedule:
-    - cron: '0 6,12,18 * * *'  # Runs every 6 hours
+    - cron: "*/29 0-18 * * *"  # Every 29 minutes from 05:30 IST to 00:29 IST
+  workflow_dispatch:
 
 jobs:
-  scrape:
+  track:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
         with:
-          node-version: '20'
+          fetch-depth: 0
 
-      - name: Install dependencies
-        run: npm install
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
 
-      - name: Run scraper
-        run: node scrape.js
-
-      - name: Commit data.json
+      - name: Install Dependencies
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json
-          git commit -m "Update data.json [auto]"
-          git push
+          npm install cheerio node-fetch@2
+
+      - name: Run Sacnilk BO Tracker
+        run: |
+          set -e
+          node scrape.js
+
+      - name: Commit and Push
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "Auto Tracker Bot"
+          git add data/
+          git commit -m "Advance Auto update: $(date '+%Y-%m-%d %H:%M')" || echo "No changes"
+          git pull --rebase --autostash || echo "Pull failed"
+          git push || echo "Nothing to push"
